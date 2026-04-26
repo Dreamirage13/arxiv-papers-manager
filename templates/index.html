@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArXiv Papers Manager - 论文管理</title>
+    <style>
+        /* ==================== 全局样式 ==================== */
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* ==================== 布局容器 ==================== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* ==================== 头部样式 ==================== */
+        header {
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 0;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h1::before {
+            content: "📚";
+        }
+
+        /* ==================== 添加论文区域 ==================== */
+        .add-paper-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .add-paper-section h2 {
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .input-group input {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .input-group input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        /* 文件上传样式 */
+        .file-upload-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .file-upload-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: #f1f5f9;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .file-upload-label:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: #eff6ff;
+        }
+
+        .file-upload-label input[type="file"] {
+            display: none;
+        }
+
+        .file-name {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ==================== 按钮样式 ==================== */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-dark {
+            background: #475569;
+            color: white;
+        }
+
+        .btn-dark:hover {
+            background: #334155;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.875rem;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* ==================== 论文卡片样式 ==================== */
+        .papers-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .paper-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary-color);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .paper-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .paper-card.main-paper {
+            border-left-color: var(--primary-color);
+        }
+
+        .paper-card.related-paper {
+            border-left-color: var(--success-color);
+            margin-left: 20px;
+            background: #f0fdf4;
+        }
+
+        .paper-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .paper-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        /* 关系类型标签 */
+        .relation-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .relation-tag.relation-citation {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .relation-tag.relation-reference {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .paper-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin: 12px 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .paper-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ==================== 摘要展开/收起 ==================== */
+        .paper-abstract-container {
+            margin: 16px 0;
+            position: relative;
+        }
+
+        .paper-abstract {
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        .paper-abstract.chinese {
+            color: #1a1a1a;
+        }
+
+        .paper-abstract.truncated {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .toggle-abstract {
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        .toggle-abstract:hover {
+            text-decoration: underline;
+        }
+
+        /* ==================== 论文链接 ==================== */
+        .paper-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .paper-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ==================== 操作按钮区域 ==================== */
+        .paper-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* ==================== 加载和提示状态 ==================== */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert.success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        /* ==================== 空状态 ==================== */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        /* ==================== 相关论文容器 ==================== */
+        .related-papers {
+            margin-left: 24px;
+            padding-left: 24px;
+            border-left: 2px solid var(--border-color);
+        }
+
+        .related-papers-header {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 20px 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ==================== 响应式设计 ==================== */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            .input-group input,
+            .input-group button {
+                width: 100%;
+            }
+
+            .paper-card.related-paper {
+                margin-left: 10px;
+            }
+
+            .paper-actions {
+                flex-direction: column;
+            }
+
+            .paper-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* ==================== 警告提示 ==================== */
+        .warning-banner {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            color: #92400e;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .warning-banner.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- 页面头部 -->
+    <header>
+        <div class="header-content">
+            <h1>ArXiv Papers Manager</h1>
+            <p style="color: var(--text-secondary);">论文管理与翻译工具</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- 警告提示（翻译功能未配置时显示） -->
+        {% if not translator_configured %}
+        <div class="warning-banner show" id="translatorWarning">
+            ⚠️ 翻译功能未配置。请设置 <code>OPENAI_API_KEY</code> 环境变量以启用翻译功能。
+        </div>
+        {% endif %}
+
+        <!-- 添加论文区域 -->
+        <section class="add-paper-section">
+            <h2>📥 添加新论文</h2>
+            <div class="input-group">
+                <input type="text" id="paperInput" placeholder="输入 ArXiv ID 或 URL，例如：2301.12345 或 https://arxiv.org/abs/2301.12345">
+                <button class="btn btn-primary" onclick="addPaper()" id="addBtn">
+                    <span id="addBtnText">添加论文</span>
+                </button>
+            </div>
+            <div style="margin-top: 12px;">
+                <label class="file-upload-label">
+                    <span>📄</span>
+                    <span>上传PDF文件</span>
+                    <input type="file" id="pdfInput" accept=".pdf" onchange="handleFileSelect(event)">
+                </label>
+                <span class="file-name" id="fileName"></span>
+                <button class="btn btn-success btn-sm" onclick="uploadPdf()" id="uploadBtn" style="display: none; margin-left: 12px;">
+                    <span id="uploadBtnText">上传</span>
+                </button>
+            </div>
+            <div class="alert" id="addAlert"></div>
+        </section>
+
+        <!-- 论文列表区域 -->
+        <section class="papers-section">
+            <div id="papersContainer">
+                {% if papers %}
+                <div class="papers-grid" id="papersGrid">
+                    {% for paper in papers %}
+                    <!-- 主论文卡片 -->
+                    <div class="paper-card main-paper" data-arxiv-id="{{ paper.arxiv_id }}">
+                        <div class="paper-header">
+                            <div class="paper-title" id="title-{{ paper.arxiv_id }}">{{ paper.title }}</div>
+                        </div>
+                        <div class="paper-meta">
+                            <span>👤 {{ paper.authors_display }}</span>
+                            <span>📅 {{ paper.year if paper.year else 'N/A' }}</span>
+                            <span>🔗 <a href="{{ paper.arxiv_url }}" target="_blank" class="paper-link">{{ paper.arxiv_id }}</a></span>
+                        </div>
+                        <div class="paper-abstract-container">
+                            <div class="paper-abstract truncated" id="abstract-{{ paper.arxiv_id }}">{{ paper.abstract }}</div>
+                            <span class="toggle-abstract" id="toggle-{{ paper.arxiv_id }}" onclick="toggleAbstract('{{ paper.arxiv_id }}')">Expand</span>
+                        </div>
+                        <div class="paper-actions">
+                            <button class="btn btn-warning btn-sm" onclick="toggleTranslation('{{ paper.arxiv_id }}')" id="translateBtn-{{ paper.arxiv_id }}">
+                                译文
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="fetchRelatedPaper('{{ paper.arxiv_id }}')" id="fetchBtn-{{ paper.arxiv_id }}">
+                                获取相关论文
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deletePaper('{{ paper.arxiv_id }}')">
+                                删除
+                            </button>
+                        </div>
+                        <!-- 相关论文区域 -->
+                        <div class="related-papers-header" id="relatedHeader-{{ paper.arxiv_id }}" style="display: none;">
+                            📑 相关论文
+                            <button class="btn btn-sm btn-outline" onclick="toggleRelatedPapers('{{ paper.arxiv_id }}')" id="toggleRelatedBtn-{{ paper.arxiv_id }}">
+                                折叠
+                            </button>
+                        </div>
+                        <div class="related-papers" id="related-{{ paper.arxiv_id }}" style="display: block;">
+                            <!-- 相关论文将通过JavaScript动态加载 -->
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">📚</div>
+                    <h3>暂无论文</h3>
+                    <p>在上方输入框中添加 ArXiv 论文以开始</p>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // ==================== 全局状态管理 ====================
+        
+        // 存储翻译状态
+        const translationState = {};
+        
+        // 存储相关论文折叠状态
+        const relatedPapersCollapsed = {};
+        
+        // 存储已展开的摘要
+        const expandedAbstracts = new Set();
+
+        // ==================== 文件上传处理 ====================
+        
+        let selectedFile = null;
+
+        /**
+         * 处理文件选择
+         */
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('uploadBtn').style.display = 'inline-flex';
+            }
+        }
+
+        /**
+         * 上传PDF文件
+         */
+        async function uploadPdf() {
+            if (!selectedFile) return;
+
+            const btn = document.getElementById('uploadBtn');
+            const btnText = document.getElementById('uploadBtnText');
+            const alert = document.getElementById('addAlert');
+            
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="loading"></span> 上传中...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                
+                const response = await fetch('/api/papers/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('论文上传成功！', 'success');
+                    selectedFile = null;
+                    document.getElementById('pdfInput').value = '';
+                    document.getElementById('fileName').textContent = '';
+                    btn.style.display = 'none';
+                    // 刷新页面显示新论文
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    showAlert(data.error || '上传失败', 'error');
+                }
+            } catch (error) {
+                showAlert('网络错误：' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = '上传';
+            }
+        }
+
+        // ==================== 添加论文功能 ====================
+        
+        /**
+         * 添加新的ArXiv论文
+         */
+        async function addPaper() {
+            const input = document.getElementById('paperInput');
+            const identifier = input.value.trim();
+            const btn = document.getElementById('addBtn');
+            const btnText = document.getElementById('addBtnText');
+            const alert = document.getElementById('addAlert');
+            
+            if (!identifier) {
+                showAlert('请输入ArXiv ID或URL', 'error');
+                return;
+            }
+            
+            // 显示加载状态
+            btn.disabled = true;
+            btnText.innerHTML = '<span class="loading"></span> 添加中...';
+            
+            try {
+                const response = await fetch('/api/papers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `identifier=${encodeURIComponent(identifier)}`
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert('论文添加成功！', 'success');
+                    input.value = '';
+                    // 刷新页面显示新论文
+                    setTimeout(() => location.reload(), 500);
+                } else {
+                    showAlert(data.error || '添加失败', 'error');
+                }
+            } catch (error) {
+                showAlert('网络错误：' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btnText.innerHTML = '添加论文';
+            }
+        }
+
+        /**
+         * 显示提示信息
+         */
+        function showAlert(message, type) {
+            const alert = document.getElementById('addAlert');
+            alert.textContent = message;
+            alert.className = `alert ${type} show`;
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 3000);
+        }
+
+        // ==================== 摘要展开/收起功能 ====================
+        
+        /**
+         * 切换摘要的展开/收起状态
+         */
+        function toggleAbstract(arxivId) {
+            const abstractEl = document.getElementById(`abstract-${arxivId}`);
+            const toggleEl = document.getElementById(`toggle-${arxivId}`);
+            
+            if (expandedAbstracts.has(arxivId)) {
+                // 收起
+                abstractEl.classList.add('truncated');
+                toggleEl.textContent = 'Expand';
+                expandedAbstracts.delete(arxivId);
+            } else {
+                // 展开
+                abstractEl.classList.remove('truncated');
+                toggleEl.textContent = 'Collapse';
+                expandedAbstracts.add(arxivId);
+            }
+        }
+
+        // ==================== 翻译功能 ====================
+        
+        /**
+         * 切换论文标题和摘要的中英文显示
+         */
+        async function toggleTranslation(arxivId) {
+            const titleEl = document.getElementById(`title-${arxivId}`);
+            const abstractEl = document.getElementById(`abstract-${arxivId}`);
+            const btn = document.getElementById(`translateBtn-${arxivId}`);
+            
+            // 初始化状态
+            if (!translationState[arxivId]) {
+                translationState[arxivId] = {
+                    isChinese: false,
+                    originalTitle: titleEl.textContent,
+                    originalAbstract: abstractEl.textContent,
+                    chineseTitle: null,
+                    chineseAbstract: null
+                };
+            }
+            
+            const state = translationState[arxivId];
+            
+            // 切换翻译状态
+            if (state.isChinese) {
+                // 切换回原文
+                titleEl.textContent = state.originalTitle;
+                abstractEl.textContent = state.originalAbstract;
+                abstractEl.classList.remove('chinese');
+                btn.textContent = '译文';
+                state.isChinese = false;
+            } else {
+                // 显示译文
+                btn.innerHTML = '<span class="loading"></span>';
+                btn.disabled = true;
+                
+                try {
+                    // 如果没有缓存的译文，调用API翻译
+                    if (!state.chineseTitle || !state.chineseAbstract) {
+                        const response = await fetch('/api/translate', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: `title=${encodeURIComponent(state.originalTitle)}&abstract=${encodeURIComponent(state.originalAbstract)}`
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            state.chineseTitle = data.translation.translated_title || state.originalTitle;
+                            state.chineseAbstract = data.translation.translated_abstract || state.originalAbstract;
+                        } else {
+                            state.chineseTitle = state.originalTitle;
+                            state.chineseAbstract = state.originalAbstract;
+                        }
+                    }
+                    
+                    // 显示译文
+                    titleEl.textContent = state.chineseTitle;
+                    abstractEl.textContent = state.chineseAbstract;
+                    abstractEl.classList.add('chinese');
+                    btn.textContent = '原文';
+                    state.isChinese = true;
+                    
+                } catch (error) {
+                    console.error('翻译错误:', error);
+                    titleEl.textContent = state.originalTitle;
+                    abstractEl.textContent = state.originalAbstract;
+                    btn.textContent = '译文';
+                    state.isChinese = false;
+                } finally {
+                    btn.disabled = false;
+                    if (state.isChinese) {
+                        btn.textContent = '原文';
+                    } else {
+                        btn.textContent = '译文';
+                    }
+                }
+            }
+        }
+
+        // ==================== 获取相关论文功能 ====================
+        
+        /**
+         * 从Connected Papers获取主论文的相关论文
+         */
+        async function fetchRelatedPaper(arxivId) {
+            const btn = document.getElementById(`fetchBtn-${arxivId}`);
+            const relatedContainer = document.getElementById(`related-${arxivId}`);
+            const relatedHeader = document.getElementById(`relatedHeader-${arxivId}`);
+            
+            // 显示加载状态
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span>';
+            
+            try {
+                const response = await fetch(`/api/papers/${arxivId}/fetch-related`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 添加新的相关论文卡片，传递主论文ID
+                    addRelatedPaperCard(data.paper, relatedContainer, arxivId);
+                    relatedHeader.style.display = 'flex';
+                } else {
+                    showAlert(data.error || '获取失败', 'error');
+                }
+            } catch (error) {
+                showAlert('网络错误：' + error.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '获取相关论文';
+            }
+        }
+
+        /**
+         * 添加相关论文卡片到页面
+         */
+        function addRelatedPaperCard(paper, container, parentArxivId) {
+            const card = document.createElement('div');
+            card.className = 'paper-card related-paper';
+            card.id = `card-${parentArxivId}-${paper.arxiv_id}`;
+
+            // 关系类型标签
+            let relationLabel = '';
+            if (paper.relation_type === 'citation') {
+                // citation: 这些论文被主论文引用 -> 显示 "被主论文引用"（蓝色）
+                relationLabel = '<span class="relation-tag relation-citation">被主论文引用</span>';
+            } else if (paper.relation_type === 'reference') {
+                // reference: 主论文引用了这些论文 -> 显示 "引用了主论文"（绿色）
+                relationLabel = '<span class="relation-tag relation-reference">引用了主论文</span>';
+            }
+
+            card.innerHTML = `
+                <div class="paper-header">
+                    <div class="paper-title" id="title-${paper.arxiv_id}">${paper.title}</div>
+                </div>
+                <div class="paper-meta">
+                    <span>👤 ${paper.authors_display || 'Unknown'}</span>
+                    <span>📅 ${paper.year || 'N/A'}</span>
+                    <span>🔗 <a href="${paper.arxiv_url}" target="_blank" class="paper-link">${paper.arxiv_id}</a></span>
+                    ${relationLabel}
+                </div>
+                <div class="paper-abstract-container">
+                    <div class="paper-abstract truncated" id="abstract-${paper.arxiv_id}">${paper.abstract || ''}</div>
+                    <span class="toggle-abstract" id="toggle-${paper.arxiv_id}" onclick="toggleAbstract('${paper.arxiv_id}')">Expand</span>
+                </div>
+                <div class="paper-actions">
+                    <button class="btn btn-warning btn-sm" onclick="toggleTranslation('${paper.arxiv_id}')" id="translateBtn-${paper.arxiv_id}">
+                        译文
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteRelatedPaper('${paper.arxiv_id}', '${parentArxivId}')">
+                        删除
+                    </button>
+                    <button class="btn btn-dark btn-sm" onclick="permanentlyDeleteRelatedPaper('${paper.arxiv_id}', '${parentArxivId}')">
+                        彻底删除
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(card);
+        }
+
+        // ==================== 删除论文功能 ====================
+        
+        /**
+         * 删除主论文及其所有相关论文
+         */
+        async function deletePaper(arxivId) {
+            if (!confirm('确定要删除这篇论文及其所有相关论文吗？')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/papers/${arxivId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    location.reload();
+                } else {
+                    showAlert('删除失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (error) {
+                showAlert('网络错误：' + error.message, 'error');
+            }
+        }
+        
+        /**
+         * 删除相关论文（恢复到原列表）
+         */
+        async function deleteRelatedPaper(arxivId, parentArxivId) {
+            if (!confirm('确定要删除这篇相关论文吗？\n\n提示：该论文的ArXiv ID将被恢复到待获取列表中。')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/papers/${arxivId}?related_to=${parentArxivId}&permanent=false`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 移除相关论文卡片
+                    const card = document.getElementById(`card-${parentArxivId}-${arxivId}`);
+                    if (card) {
+                        card.remove();
+                    }
+                    // 检查是否还有相关论文
+                    const container = document.getElementById(`related-${parentArxivId}`);
+                    if (container && container.children.length === 0) {
+                        document.getElementById(`relatedHeader-${parentArxivId}`).style.display = 'none';
+                    }
+                } else {
+                    showAlert('删除失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (error) {
+                showAlert('网络错误：' + error.message, 'error');
+            }
+        }
+
+        /**
+         * 彻底删除相关论文（不恢复）
+         */
+        async function permanentlyDeleteRelatedPaper(arxivId, parentArxivId) {
+            if (!confirm('确定要彻底删除这篇相关论文吗？\n\n提示：该论文的ArXiv ID将被永久删除，不会恢复。')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/papers/${arxivId}?related_to=${parentArxivId}&permanent=true`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 移除相关论文卡片
+                    const card = document.getElementById(`card-${parentArxivId}-${arxivId}`);
+                    if (card) {
+                        card.remove();
+                    }
+                    // 检查是否还有相关论文
+                    const container = document.getElementById(`related-${parentArxivId}`);
+                    if (container && container.children.length === 0) {
+                        document.getElementById(`relatedHeader-${parentArxivId}`).style.display = 'none';
+                    }
+                } else {
+                    showAlert('彻底删除失败: ' + (data.error || '未知错误'), 'error');
+                }
+            } catch (error) {
+                showAlert('网络错误：' + error.message, 'error');
+            }
+        }
+        
+        /**
+         * 折叠/展开相关论文
+         */
+        function toggleRelatedPapers(arxivId) {
+            const container = document.getElementById(`related-${arxivId}`);
+            const btn = document.getElementById(`toggleRelatedBtn-${arxivId}`);
+            
+            if (relatedPapersCollapsed[arxivId]) {
+                // 展开
+                container.style.display = 'block';
+                btn.textContent = '折叠';
+                relatedPapersCollapsed[arxivId] = false;
+            } else {
+                // 折叠
+                container.style.display = 'none';
+                btn.textContent = '展开';
+                relatedPapersCollapsed[arxivId] = true;
+            }
+        }
+
+        // ==================== 页面初始化 ====================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 回车键提交论文
+            document.getElementById('paperInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addPaper();
+                }
+            });
+            
+            // 页面加载时获取所有主论文的相关论文
+            loadAllRelatedPapers();
+        });
+        
+        /**
+         * 加载所有主论文的相关论文
+         */
+        async function loadAllRelatedPapers() {
+            try {
+                const response = await fetch('/api/papers');
+                const data = await response.json();
+                
+                if (data.success && data.papers) {
+                    for (const paper of data.papers) {
+                        await loadRelatedPapers(paper.arxiv_id);
+                    }
+                }
+            } catch (error) {
+                console.error('加载相关论文失败:', error);
+            }
+        }
+        
+        /**
+         * 加载单个主论文的相关论文
+         */
+        async function loadRelatedPapers(arxivId) {
+            try {
+                const response = await fetch(`/api/papers/${arxivId}/related`);
+                const data = await response.json();
+                
+                if (data.success && data.related_papers && data.related_papers.length > 0) {
+                    const container = document.getElementById(`related-${arxivId}`);
+                    const header = document.getElementById(`relatedHeader-${arxivId}`);
+                    
+                    if (container) {
+                        for (const paper of data.related_papers) {
+                            addRelatedPaperCard(paper, container, arxivId);
+                        }
+                        if (header) {
+                            header.style.display = 'flex';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error(`加载 ${arxivId} 的相关论文失败:`, error);
+            }
+        }
+    </script>
+</body>
+</html>
