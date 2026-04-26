@@ -1,6 +1,6 @@
 # ArXiv Papers Manager
 
-一个基于 Python 的网页端 ArXiv 论文管理应用，支持论文上传、ArXiv ID 解析、相关论文获取和智能翻译。
+一个基于 Python 的网页端 ArXiv 论文管理应用，支持论文上传、ArXiv ID 解析、相关论文获取和智能翻译。该项目使用 vibe coding 创建和维护。
 
 ## 功能特性
 
@@ -144,3 +144,5 @@ arxiv-papers-manage/
 | CrossRef API | DOI 查询 | 建议间隔 1 秒 |
 
 > 注意：大量请求可能导致 IP 被限流，建议合理控制请求频率。
+
+## LICENSE:  MIT

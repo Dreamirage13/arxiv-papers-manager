@@ -8,6 +8,5 @@ python-multipart==0.0.6   # 文件上传支持
 requests==2.31.0          # HTTP请求库
 beautifulsoup4==4.12.3    # HTML解析库
 feedparser==6.0.11         # 解析ArXiv Atom feed
-pysqlite3==0.5.2          # SQLite数据库（兼容加密数据库）
 pypdf==4.0.1               # PDF处理库
 aiofiles==23.2.1          # 异步文件操作
